@@ -896,13 +896,17 @@ pub fn print_text(
                     if let Some(shape) = painter.main_cursor()
                         && is_active
                     {
-                        lines.show_real_cursor();
-                        queue!(lines, shape, cursor::SavePosition).unwrap();
+                        if is_cursor {
+                            lines.show_real_cursor();
+                            queue!(lines, shape, cursor::SavePosition).unwrap();
+                        }
+                        painter.apply_main_selection(false, is_start == Some(true));
+                        Some(SelectionMut::Main(false, is_start == Some(false)))
+                    } else {
+                        lines.hide_real_cursor();
+                        painter.apply_main_selection(is_cursor, is_start == Some(true));
+                        Some(SelectionMut::Main(is_cursor, is_start == Some(false)))
                     }
-
-                    lines.hide_real_cursor();
-                    painter.apply_main_selection(is_cursor, is_start == Some(true));
-                    Some(SelectionMut::Main(is_cursor, is_start == Some(false)))
                 }
                 Some(SelectionMutParts { is_main: false, is_cursor, is_start, .. }) => {
                     painter.apply_extra_selection(is_cursor, is_start == Some(true));
